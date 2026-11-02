@@ -1,0 +1,14 @@
+name: Sync fork
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - run: gh repo sync ${{ github.repository }} --source ZuluCode777/proyecto-1-APP --branch main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
