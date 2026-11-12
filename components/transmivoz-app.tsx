@@ -4,6 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { AppHeader } from "@/components/app-header"
 import { Assistance } from "@/components/assistance"
 import { AuditoryGps } from "@/components/auditory-gps"
+import { Avisos } from "@/components/avisos"
+import { MetroList } from "@/components/metro-list"
 import { ModeMenu } from "@/components/mode-menu"
 import { PartialHome } from "@/components/partial-home"
 import { PartialRoutes } from "@/components/partial-routes"
@@ -33,6 +35,7 @@ type Screen =
   | "asistencia"
   | "vision"
   | "gps"
+  | "metro"
 
 const STORAGE_KEY = "transmivoz-mode"
 const FLUOR_KEY = "transmivoz-fluor"
@@ -45,6 +48,7 @@ export function TransMiVozApp() {
   const [mode, setMode] = useState<Mode>("parcial")
   const [history, setHistory] = useState<Screen[]>(["home"])
   const [menuOpen, setMenuOpen] = useState(false)
+  const [avisosOpen, setAvisosOpen] = useState(false)
   const [voiceOpen, setVoiceOpen] = useState(false)
   const [fluor, setFluor] = useState(false)
   const [query, setQuery] = useState("")
@@ -220,7 +224,8 @@ export function TransMiVozApp() {
         fluor ? "fluor" : "",
       ].join(" ")}
     >
-      <AppHeader onMenu={() => setMenuOpen(true)} onNotifications={() => speak("No tienes notificaciones nuevas.")} />
+      <AppHeader onMenu={() => setMenuOpen(true)} onNotifications={() => setAvisosOpen(true)} />
+      <Avisos open={avisosOpen} onClose={() => setAvisosOpen(false)} catalogo={data} errorCatalogo={error} />
 
       {avisoReintento}
 
@@ -241,6 +246,7 @@ export function TransMiVozApp() {
             go("gps")
             speak("Mapa y GPS. Activa tu ubicación para ver las estaciones cercanas.")
           }}
+          onMetro={() => go("metro")}
           onAssistance={() => go("asistencia")}
         />
       )}
@@ -321,6 +327,8 @@ export function TransMiVozApp() {
       {screen === "asistencia" && <Assistance onBack={back} />}
 
       {screen === "vision" && <VisionAssist onBack={back} />}
+
+      {screen === "metro" && <MetroList onBack={back} />}
 
       {screen === "gps" && (data ? <AuditoryGps data={data} onBack={back} /> : loading)}
 

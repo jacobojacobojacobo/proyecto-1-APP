@@ -18,7 +18,8 @@ pasos que sigue para responder.
 Se generó originalmente con v0; ahora se desarrolla y se aloja desde este
 repositorio. Ver [docs/SELF-HOSTING.md](docs/SELF-HOSTING.md) para correrlo en
 Windows y [docs/DEMO.md](docs/DEMO.md) para la presentación.
-Para publicar una demostración en Render Free (sin Ollama) ver
+Para publicar una demostración en Render Free (con las reglas del asistente;
+el modelo de Ollama es opcional) ver
 [docs/RENDER.md](docs/RENDER.md).
 
 ## Los dos modos
@@ -74,11 +75,12 @@ da horarios, no tiempos de llegada.
 
 Trabaja en dos pasos:
 
-1. **Entender** la frase. Las reglas (`parseIntent`) interpretan primero; si
-   reconocen un comando conocido, se usan y no se consulta el modelo. Solo
-   cuando las reglas no entienden la frase se consulta un modelo local de Ollama,
-   si `OLLAMA_MODEL` está configurado (`lib/ollama.ts`), con un presupuesto corto
-   y respaldo inmediato a las reglas.
+1. **Entender** la frase. Si `OLLAMA_MODEL` está configurado y el modelo está
+   cargado, toda pregunta se consulta a un modelo local de Ollama
+   (`lib/ollama.ts`), con una espera acotada y respaldo a las reglas
+   (`parseIntent`). Sin el modelo cargado responden las reglas al instante y se
+   lanza su precarga. Las consultas del Metro y los viajes sin destino las
+   resuelven siempre las reglas.
 2. **Resolver** con herramientas sobre los datos reales (`runIntent`): buscar
    estaciones, planear el viaje, leer el recorrido o el horario, usar la
    ubicación como origen.
@@ -136,7 +138,7 @@ funcionan ahí.
 
 ```
 app/
-  api/agent/route.ts         asistente: reglas primero y Ollama solo si no entienden
+  api/agent/route.ts         asistente: Ollama si está cargado, reglas si no
   api/transmilenio/route.ts  estaciones y rutas, en vivo o desde la copia
   diagnostico/               pruebas en vivo de cada función
 components/                  una pantalla por archivo, el mapa y los diálogos
