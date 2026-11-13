@@ -20,6 +20,13 @@ struct SesionAccesorioVista: View {
         return modelo.vozPropiaActiva
     }
 
+    /// Aviso del sensor real, por frases. Unidas con un espacio son el texto de siempre.
+    private static let frasesAvisoReal = [
+        "Sensor real por Bluetooth.",
+        "Los avisos hablados solo salen por auriculares.",
+        "Con la pantalla bloqueada o la app en segundo plano la sesión se detiene; al volver se sincroniza de nuevo.",
+    ]
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -34,10 +41,21 @@ struct SesionAccesorioVista: View {
                             .accessibilityIdentifier("aviso-transporte-sintetico")
                     }
 
-                    Label("Sensor real por Bluetooth. Los avisos hablados solo salen por auriculares. Con la pantalla bloqueada o la app en segundo plano la sesión se detiene; al volver se sincroniza de nuevo.", systemImage: "dot.radiowaves.left.and.right")
-                        .font(.subheadline)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .accessibilityIdentifier("aviso-accesorio-real")
+                    // Un `Text` por frase, como el aviso de seguridad: entero mide 987 pt con el texto más grande, más que el
+                    // área visible (659 pt), y ninguna posición lo muestra entero. Cada frase tiene su identificador y su
+                    // posición; la primera conserva «aviso-accesorio-real». El icono es decorativo y va aparte.
+                    HStack(alignment: .firstTextBaseline, spacing: 8) {
+                        Image(systemName: "dot.radiowaves.left.and.right")
+                            .accessibilityHidden(true)
+                        VStack(alignment: .leading, spacing: 0) {
+                            ForEach(Array(Self.frasesAvisoReal.enumerated()), id: \.offset) { posicion, frase in
+                                Text(frase)
+                                    .fixedSize(horizontal: false, vertical: true)
+                                    .accessibilityIdentifier(posicion == 0 ? "aviso-accesorio-real" : "aviso-accesorio-real-\(posicion)")
+                            }
+                        }
+                    }
+                    .font(.subheadline)
 
                     if !modelo.enlaceVerificable {
                         // Un `Text` por párrafo, con la misma fuente, para que con el texto más grande cada párrafo quepa entero
@@ -176,8 +194,9 @@ struct SesionAccesorioVista: View {
             Label(TextoAccesorio.titulo(estado), systemImage: TextoAccesorio.icono(estado))
                 .font(.title3.weight(.semibold))
                 .accessibilityIdentifier("titulo-estado-accesorio")
-            // Un `Text` por párrafo, con la misma fuente, para que con el texto más grande cada párrafo del bloqueo quepa
-            // entero en el área visible. El primero conserva «estado-accesorio»; los demás añaden su posición.
+            // Un `Text` por párrafo, con la misma fuente, para que con el texto más grande cada párrafo (el bloqueo, la
+            // comprobación del enlace y los fallos del enlace seguro tienen varios) quepa entero en el área visible. El
+            // primero conserva «estado-accesorio»; los demás añaden su posición.
             ForEach(Array(TextoAccesorio.parrafos(estado).enumerated()), id: \.offset) { posicion, parrafo in
                 Text(parrafo)
                     .fixedSize(horizontal: false, vertical: true)
@@ -207,7 +226,7 @@ struct SesionAccesorioVista: View {
             Toggle(isOn: Binding(
                 get: { vozPropiaActiva },
                 set: { modelo.fijarVozPropia($0) })) {
-                    Text("Avisos hablados por la app")
+                    Text(TextoPreferencias.etiquetaVoz)
                         .accessibilityIdentifier("etiqueta-interruptor-voz-app")
                 }
                 .frame(minHeight: 44)
